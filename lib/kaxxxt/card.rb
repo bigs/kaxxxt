@@ -2,6 +2,10 @@ module Kaxxxt
   class Card
     attr_accessor :orientation
 
+    def initialize
+      @orientation = :right
+    end
+
     def action
       :pass
     end
@@ -13,7 +17,7 @@ module Kaxxxt
     def execute_on(color, attack)
       case attack
       when color
-        :execute
+        [:execute, @orientation]
       else
         :pass
       end
