@@ -1,10 +1,51 @@
 module Kaxxxt
    class Game
-    attr_accessor :players, :kaxxxt, :current_player
+    attr_accessor :players, :kaxxxt, :current_player_idx,
+                  :turn_hits, :turn_status
 
     def roll
       # 1d6
       rand(6) + 1
+    end
+
+    def current_player
+      @players[@current_player_idx]
+    end
+
+    def initialize_turn_hits
+      @turn_hits = players.reduce({}) do |memo, player|
+        memo[player.name] = 0 
+      end
+    end
+
+    def player_at(position)
+      case position
+      when :left
+        (@current_player_idx + 3) % 4
+      when :right
+        (@current_player_idx + 1) % 4
+      when :across
+        (@current_player_idx + 2) % 4
+      end
+    end
+
+    def player_to_right
+      (@current_player_idx - 1) % @players.count
+    end
+
+    def player_across
+      (@current_player_idx + 2) % @players.count
+    end
+
+    def turn
+      initialize_turn_hits
+      @turn_status = :running
+      while @turn_status == :running
+        response = current_player.respond_to(roll)
+      end
+    end
+
+    def process_response
     end
   end
 
@@ -14,15 +55,17 @@ module Kaxxxt
     def move(roll)
       case roll
       when 1
-        #red
+        :red_laser
       when 2
-        #blue
+        :blue_laser
       when 3, 4
-        #green
+        :green_laser
       when 5
-        #reroll
+        :reroll
       when 6
-        #direct hit
+        :direct_hit
+      else
+      end
     end
   end
 end
