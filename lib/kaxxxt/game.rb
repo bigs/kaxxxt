@@ -1,5 +1,5 @@
 module Kaxxxt
-   class Game
+  class Game
     attr_accessor :players, :kaxxxt, :current_player_idx,
                   :turn_hits, :turn_status
 
