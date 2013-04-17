@@ -49,7 +49,7 @@ module Kaxxxt
 
     def turn
       # no one has been hit
-      turn_hits = @players.collect { |_| 0 }
+      @players.each { |player| player.received_count = 0 }
       # calculate kaxxxt's move
       roll = self.roll
       current_action = @kaxxxt.move(roll)
@@ -62,35 +62,41 @@ module Kaxxxt
 
       # while we're in the neighborhood, play
       while turn_status == :running
-        turn_hits[current_subject_idx] += 1
+        responses = current_subject.receive(current_action)
 
-        if turn_hits[current_subject_idx] >= 3
-          destroy_player_at(@current_player_idx)
-          turn_status = :stopped
-          next
-        end
-
-        response = current_subject.respond_to(current_action)
-
-        # terminal can be:
-        # - took damage
-        # - repaired
-        # otherwise, you are passing on a laser
-        if response == [:terminal]
-          turn_status = :stopped
-        else
-          # passing on a laser
-          # response is a two-tuple
-          action, subject = response
-
-          # the loop terminates if we're attacking
-          # kaxxxt, so we need a special case
-          if subject == :kaxxxt
+        responses.each do |response|
+          # terminal can be:
+          # - took damage
+          # - repaired
+          # - died from 3 hit rule
+          # otherwise, you are passing on a laser
+          if response.first == :terminal
+            _, action, args = response
             turn_status = :stopped
-            @kaxxxt.receive(action)
+            case action
+            when :took_damage
+              amount = args.first
+              puts "#{current_subject.name} took #{amount} damage!"
+            when :repaired
+              amount = args.first
+              puts "#{current_subject.name} repaired #{amount}."
+            when :died_from_hits
+              puts "#{current_subject.name} died from too many hits in a turn!"
+            end
           else
-            current_action = action
-            current_subject_idx = index_of_player_at(subject)
+            # passing on a laser
+            # response is a two-tuple
+            action, subject = response
+
+            # the loop terminates if we're attacking
+            # kaxxxt, so we need a special case
+            if subject == :kaxxxt
+              turn_status = :stopped
+              @kaxxxt.receive(action)
+            else
+              current_action = action
+              current_subject_idx = index_of_player_at(subject)
+            end
           end
         end
       end
