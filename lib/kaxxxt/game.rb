@@ -1,7 +1,7 @@
 module Kaxxxt
   class Game
     attr_accessor :players, :kaxxxt, :current_player_idx,
-                  :turn_hits, :turn_status
+                  :turn_hits
 
     def roll
       # 1d6
@@ -18,7 +18,7 @@ module Kaxxxt
       end
     end
 
-    def player_at(position)
+    def index_of_player_at(position)
       case position
       when :left
         (@current_player_idx + 3) % 4
@@ -29,18 +29,14 @@ module Kaxxxt
       end
     end
 
-    def player_to_right
-      (@current_player_idx - 1) % @players.count
-    end
-
-    def player_across
-      (@current_player_idx + 2) % @players.count
+    def player_at(position)
+      @players[index_of_player_at(position)]
     end
 
     def turn
       initialize_turn_hits
-      @turn_status = :running
-      while @turn_status == :running
+      turn_status = :running
+      while turn_status == :running
         response = current_player.respond_to(roll)
       end
     end
